@@ -24,13 +24,19 @@ public class CloudVisionManager {
         return cloudVisionManager;
     }
 
-    public void getCloudVisionData(Bitmap bitmap, Context context) throws IOException {
+    public void getCloudVisionData(Bitmap bitmap, Context context, final Callback callback) throws IOException {
+        Log.d("テスト","A");
         cloudVision.callCloudVision(bitmap, context, new CloudVision.CloudCallBack() {
             @Override
-            public void callback() {
-                Log.d(TAG,"先か後か");
+            public void callback(String str) {
+                callback.callback(str);
             }
+
         });
+    }
+
+    public interface Callback{
+        void callback(String str);
     }
 
 }

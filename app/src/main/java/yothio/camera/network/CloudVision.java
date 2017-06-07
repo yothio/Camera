@@ -43,7 +43,7 @@ class CloudVision {
 
 
 
-    public void callCloudVision(final Bitmap bitmap, final Context mContext,CloudCallBack callBack) throws IOException {
+    public void callCloudVision(final Bitmap bitmap, final Context mContext, final CloudCallBack callBack) throws IOException {
         // Switch text to loading
         imageDetails = "Up loading Image";
         Log.d("クラウドビジョン","開始");
@@ -135,10 +135,11 @@ class CloudVision {
             protected void onPostExecute(String result) {
                 imageDetails = result;
                 Log.d("終了",result);
+                //呼び出し元のコールバックメソッドを呼び出し
+                callBack.callback(result);
             }
         }.execute();
     }
-
 
     private String convertResponseToString(BatchAnnotateImagesResponse response) {
         String message = "I found these things:\n\n";
@@ -157,7 +158,7 @@ class CloudVision {
     }
 
     interface CloudCallBack{
-        void callback();
+        void callback(String str);
     }
 
 

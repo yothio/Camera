@@ -58,7 +58,12 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Log.d("メイン","開始");
                 try {
-                    cloudVisionManager.getCloudVisionData(mBitmap,getApplicationContext());
+                    cloudVisionManager.getCloudVisionData(mBitmap, getApplicationContext(), new CloudVisionManager.Callback() {
+                        @Override
+                        public void callback(String str) {
+                            Log.d("メイン",str);
+                        }
+                    });
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
