@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         //キャンセルした時
-        if(requestCode != RESULT_OK){
+        if(data != null){
             return;
         }
         //カメラ起動したとき
