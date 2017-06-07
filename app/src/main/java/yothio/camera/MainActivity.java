@@ -19,16 +19,16 @@ import java.io.FileDescriptor;
 import java.io.IOException;
 
 import yothio.camera.Util.PermissionUtil;
+import yothio.camera.network.CloudVisionManager;
 
 public class MainActivity extends AppCompatActivity {
 
-    Button cameraBtn, getPicBtn;
+    Button cameraBtn, getPicBtn, cloudVisionBtn;
     final int CAMERA_RESULT_CODE = 1234;
     final private int GET_PIC_RESULT_CODE = 4321;
     private ImageView imageView;
     private Bitmap mBitmap;
-    ApiAccess apiAccess;
-
+    private CloudVisionManager cloudVisionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,8 +37,9 @@ public class MainActivity extends AppCompatActivity {
 
         cameraBtn = (Button) findViewById(R.id.camera_start_button);
         getPicBtn = (Button) findViewById(R.id.get_pic_button);
+        cloudVisionBtn = (Button)findViewById(R.id.cloud_vision_button);
         imageView = (ImageView) findViewById(R.id.imageView);
-        apiAccess = new ApiAccess();
+        cloudVisionManager = new CloudVisionManager();
 
         cameraBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -46,26 +47,41 @@ public class MainActivity extends AppCompatActivity {
                 startCamera();
             }
         });
-
         getPicBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                intent.addCategory(Intent.CATEGORY_OPENABLE);
-                intent.setType("image/*");
-                startActivityForResult(intent, GET_PIC_RESULT_CODE);
+                startGalleryChoose();
             }
         });
-
+        cloudVisionBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d("メイン","開始");
+                try {
+                    cloudVisionManager.getCloudVisionData(mBitmap,getApplicationContext());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                Log.d("メイン","終わり");
+            }
+        });
     }
 
     private void startCamera() {
         if (PermissionUtil.requestPermission(this, CAMERA_RESULT_CODE,
                 Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.CAMERA)) {
-
             //カメラ起動
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             startActivityForResult(intent, CAMERA_RESULT_CODE);
+        }
+    }
+
+    private void startGalleryChoose(){
+        if(PermissionUtil.requestPermission(this,GET_PIC_RESULT_CODE,Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("image/*");
+            startActivityForResult(intent, GET_PIC_RESULT_CODE);
         }
     }
 
@@ -76,6 +92,11 @@ public class MainActivity extends AppCompatActivity {
             case CAMERA_RESULT_CODE:
                 if (PermissionUtil.grantedPermission(requestCode,CAMERA_RESULT_CODE,grantResults)){
                     startCamera();
+                }
+                break;
+            case GET_PIC_RESULT_CODE:
+                if(PermissionUtil.grantedPermission(requestCode,GET_PIC_RESULT_CODE,grantResults)){
+                    startGalleryChoose();
                 }
                 break;
         }
