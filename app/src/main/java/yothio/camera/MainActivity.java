@@ -1,5 +1,6 @@
 package yothio.camera;
 
+import android.Manifest;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -7,6 +8,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -16,6 +18,8 @@ import android.widget.ImageView;
 import java.io.FileDescriptor;
 import java.io.IOException;
 
+import yothio.camera.Util.PermissionUtil;
+
 public class MainActivity extends AppCompatActivity {
 
     Button cameraBtn, getPicBtn;
@@ -23,6 +27,8 @@ public class MainActivity extends AppCompatActivity {
     final private int GET_PIC_RESULT_CODE = 4321;
     private ImageView imageView;
     private Bitmap mBitmap;
+    ApiAccess apiAccess;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,13 +38,12 @@ public class MainActivity extends AppCompatActivity {
         cameraBtn = (Button) findViewById(R.id.camera_start_button);
         getPicBtn = (Button) findViewById(R.id.get_pic_button);
         imageView = (ImageView) findViewById(R.id.imageView);
+        apiAccess = new ApiAccess();
 
         cameraBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //カメラ起動
-                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                startActivityForResult(intent, CAMERA_RESULT_CODE);
+                startCamera();
             }
         });
 
@@ -54,12 +59,34 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void startCamera() {
+        if (PermissionUtil.requestPermission(this, CAMERA_RESULT_CODE,
+                Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.CAMERA)) {
+
+            //カメラ起動
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            startActivityForResult(intent, CAMERA_RESULT_CODE);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode){
+            case CAMERA_RESULT_CODE:
+                if (PermissionUtil.grantedPermission(requestCode,CAMERA_RESULT_CODE,grantResults)){
+                    startCamera();
+                }
+                break;
+        }
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         //キャンセルした時
-        if(data != null){
+        if (data == null) {
             return;
         }
         //カメラ起動したとき
@@ -69,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
         }
         //ギャラリーから画像を取ってくるとき
         if (requestCode == GET_PIC_RESULT_CODE && data != null) {
-            Log.d("確認",data.getDataString());
+            Log.d("確認", data.getDataString());
             try {
                 mBitmap = getBitmapFromUri(data.getData());
                 imageView.setImageBitmap(mBitmap);
@@ -80,8 +107,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     *
-     * @param uri
+     * @param uri storage path
      * @return Uriのimage
      * @throws IOException
      */
