@@ -64,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
                             Log.d("メイン",str);
                         }
                     });
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

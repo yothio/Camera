@@ -35,6 +35,7 @@ public class CloudVisionManager {
         });
     }
 
+
     public interface Callback{
         void callback(String str);
     }
